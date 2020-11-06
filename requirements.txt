@@ -1,4 +1,10 @@
--r requirements/build.txt
--r requirements/optional.txt
--r requirements/runtime.txt
--r requirements/tests.txt
+# building
+cython
+numpy
+
+# runtime
+matplotlib
+mmpycocotools
+numpy
+six
+terminaltables
