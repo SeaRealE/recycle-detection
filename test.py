@@ -19,8 +19,8 @@ from mmdet.models import build_detector
 def parse_args():
     parser = argparse.ArgumentParser(
         description='MMDet test (and eval) a model')
-    parser.add_argument('config', default='model.py', help='test config file path')
-    parser.add_argument('checkpoint', default='weights.pth', help='checkpoint file')
+    parser.add_argument('--config', default='model.py', help='test config file path')
+    parser.add_argument('--checkpoint', default='weights.pth', help='checkpoint file')
     parser.add_argument('--out', help='output result file in pickle format')
     parser.add_argument(
         '--fuse-conv-bn',
@@ -98,11 +98,6 @@ def parse_args():
 
 def main():
     args = parse_args()
-
-    print(args.config)
-    print(args.checkpoint)
-    print(args.format_only)
-    print(args.eval_options)
 
     assert args.out or args.eval or args.format_only or args.show \
         or args.show_dir, \
