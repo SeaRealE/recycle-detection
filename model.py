@@ -1,21 +1,11 @@
 dataset_type = 'CocoDataset'
-data_root = './data/'
+data_root = 'data'
 CLASSES = ('c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
 
 
 img_norm_cfg = dict(
     mean=[128.78369921, 130.5190995 , 130.93368185], std=[15.91219859, 13.76453023, 13.63622426], to_rgb=True)
-train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', with_bbox=True),
-    dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
-    dict(type='RandomFlip', flip_ratio=0.5),
-    dict(type='CutOut', n_holes=1, cutout_ratio=(0.125,0.25)),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='Pad', size_divisor=32),
-    dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
-]
+
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
@@ -31,27 +21,16 @@ test_pipeline = [
             dict(type='Collect', keys=['img']),
         ])
 ]
+
 data = dict(
     samples_per_gpu=4,
     workers_per_gpu=4,
-    train=dict(
-        type=dataset_type,
-        ann_file=data_root + 'train/traincoco.json',
-        img_prefix=data_root + 'train/imgs/',
-        pipeline=train_pipeline),
-    val=dict(
-        type=dataset_type,
-        ann_file=data_root + 'val/valcoco.json',
-        img_prefix=data_root + 'val/imgs/',
-        pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'test/testcoco.json',
-        img_prefix=data_root + 'test/imgs/',
+        ann_file='./'+data_root + '/testcoco.json',
+        img_prefix='./'+data_root+'/',
         pipeline=test_pipeline))
 evaluation = dict(interval=12, metric='bbox')
-
-
 
 
 model = dict(
@@ -149,82 +128,7 @@ model = dict(
                     loss_weight=1.0),
                 loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))
         ]))
-# model training and testing settings
-train_cfg = dict(
-    rpn=dict(
-        assigner=dict(
-            type='MaxIoUAssigner',
-            pos_iou_thr=0.7,
-            neg_iou_thr=0.3,
-            min_pos_iou=0.3,
-            match_low_quality=True,
-            ignore_iof_thr=-1),
-        sampler=dict(
-            type='RandomSampler',
-            num=256,
-            pos_fraction=0.5,
-            neg_pos_ub=-1,
-            add_gt_as_proposals=False),
-        allowed_border=0,
-        pos_weight=-1,
-        debug=False),
-    rpn_proposal=dict(
-        nms_across_levels=False,
-        nms_pre=2000,
-        nms_post=2000,
-        max_num=2000,
-        nms_thr=0.7,
-        min_bbox_size=0),
-    rcnn=[
-        dict(
-            assigner=dict(
-                type='MaxIoUAssigner',
-                pos_iou_thr=0.5,
-                neg_iou_thr=0.5,
-                min_pos_iou=0.5,
-                match_low_quality=False,
-                ignore_iof_thr=-1),
-            sampler=dict(
-                type='RandomSampler',
-                num=512,
-                pos_fraction=0.25,
-                neg_pos_ub=-1,
-                add_gt_as_proposals=True),
-            pos_weight=-1,
-            debug=False),
-        dict(
-            assigner=dict(
-                type='MaxIoUAssigner',
-                pos_iou_thr=0.6,
-                neg_iou_thr=0.6,
-                min_pos_iou=0.6,
-                match_low_quality=False,
-                ignore_iof_thr=-1),
-            sampler=dict(
-                type='RandomSampler',
-                num=512,
-                pos_fraction=0.25,
-                neg_pos_ub=-1,
-                add_gt_as_proposals=True),
-            pos_weight=-1,
-            debug=False),
-        dict(
-            assigner=dict(
-                type='MaxIoUAssigner',
-                pos_iou_thr=0.7,
-                neg_iou_thr=0.7,
-                min_pos_iou=0.7,
-                match_low_quality=False,
-                ignore_iof_thr=-1),
-            sampler=dict(
-                type='RandomSampler',
-                num=512,
-                pos_fraction=0.25,
-                neg_pos_ub=-1,
-                add_gt_as_proposals=True),
-            pos_weight=-1,
-            debug=False)
-    ])
+# model testing settings
 test_cfg = dict(
     rpn=dict(
         nms_across_levels=False,
@@ -240,37 +144,5 @@ test_cfg = dict(
 
 
 
-#load_from = 'http://download.openmmlab.com/mmdetection/v2.0/cascade_rcnn/cascade_rcnn_r50_fpn_1x_coco/cascade_rcnn_r50_fpn_1x_coco_20200316-3dc56deb.pth'
 
 
-# optimizer
-optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
-optimizer_config = dict(grad_clip=None)
-# learning policy
-lr_config = dict(
-    policy='step',
-    warmup='linear',
-    warmup_iters=500,
-    warmup_ratio=0.001,
-    step=[8, 11])
-total_epochs = 12*10
-
-
-
-
-
-
-checkpoint_config = dict(interval=12)
-# yapf:disable
-log_config = dict(
-    interval=50,
-    hooks=[
-        dict(type='TextLoggerHook'),
-        # dict(type='TensorboardLoggerHook')
-    ])
-# yapf:enable
-dist_params = dict(backend='nccl')
-log_level = 'INFO'
-load_from = None
-resume_from = None
-workflow = [('train', 1)]

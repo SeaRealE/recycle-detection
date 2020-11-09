@@ -2,6 +2,8 @@ import argparse
 import os
 import warnings
 
+import sys
+
 import json
 from typing import List
 import math
@@ -29,6 +31,7 @@ from mmdet.models import build_detector
 def parse_args():
     parser = argparse.ArgumentParser(
         description='MMDet test (and eval) a model')
+    parser.add_argument('filepath', help='test file path')
     parser.add_argument('--config', default='model.py', help='test config file path')
     parser.add_argument('--checkpoint', default='weights.pth', help='checkpoint file')
     parser.add_argument('--out', help='output result file in pickle format')
@@ -110,7 +113,7 @@ def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
     CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
     # set difficult to filter '2', '1', or do not filter, set '-1'
     if not geojsonpath:
-        images_list = glob(os.path.join(imageroot,'*.jpg'))
+        images_list = glob(os.path.join(imageroot,'/*.jpg'))
         img_id_map = {images_list[i].split('/')[-1]:i+1 for i in range(len(images_list))}
         data_dict = {}
         data_dict['images']=[]
@@ -137,13 +140,13 @@ def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
 
 
 def main():
-    args = parse_args()
-
+    args = parse_args()   
+    
     # data to json
-    rootfolder = './data/'
-    geojson2coco(imageroot=os.path.join(rootfolder, 'test/imgs'),
+    rootfolder = args.filepath
+    geojson2coco(imageroot=rootfolder,
                  geojsonpath = None,
-                 destfile=os.path.join(rootfolder, 'test/testcoco.json'))
+                 destfile=os.path.join(rootfolder, '/testcoco.json'))
 
     # inference
     assert args.out or args.eval or args.format_only or args.show \
@@ -159,6 +162,14 @@ def main():
         raise ValueError('The output file must be a pkl file.')
 
     cfg = Config.fromfile(args.config)
+    
+    cfg.data_root = args.filepath
+    
+    
+    cfg.data.test['ann_file'] = args.filepath+'/testcoco.json'
+    cfg.data.test['img_prefix'] = args.filepath+'/'
+    
+    
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
     # import modules from string list.
@@ -270,7 +281,7 @@ def main():
     with open('result.bbox.json') as json_file:
         json_data = json.load(json_file)
 
-    f = open('submission.json', 'w')
+    f = open('result.json', 'w')
     FD = {}
     for item in json_data:
         cur_id = item["image_id"]
