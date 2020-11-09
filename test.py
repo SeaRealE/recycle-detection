@@ -97,6 +97,11 @@ def parse_args():
 def main():
     args = parse_args()
 
+    print(args.config)
+    print(args.checkpoint)
+    print(args.format_only)
+    print(args.eval_options)
+
     assert args.out or args.eval or args.format_only or args.show \
         or args.show_dir, \
         ('Please specify at least one operation (save/eval/format/show the '
@@ -200,6 +205,22 @@ def main():
             eval_kwargs.update(dict(metric=args.eval, **kwargs))
             print(dataset.evaluate(outputs, **eval_kwargs))
 
+    
+    with open('result.bbox.json') as f:
+        pred = json.load(f)
+
+    while True:
+        count = 0
+        for data in pred:
+            if data['score'] < args.show_score_thr:
+                pred.remove(data)
+                count +=1
+        if count ==0:
+            break
+            
+    with open('result.bbox.json', 'w') as f:
+        json.dump(pred,f,indent='\t')
+    
 
 if __name__ == '__main__':
     main()

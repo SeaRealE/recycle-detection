@@ -4,7 +4,7 @@ numpy
 
 # runtime
 matplotlib
-mmpycocotools
+pycocotools
 numpy
 six
 terminaltables
