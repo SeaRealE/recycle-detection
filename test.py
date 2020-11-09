@@ -19,8 +19,8 @@ from mmdet.models import build_detector
 def parse_args():
     parser = argparse.ArgumentParser(
         description='MMDet test (and eval) a model')
-    parser.add_argument('config', help='test config file path')
-    parser.add_argument('checkpoint', help='checkpoint file')
+    parser.add_argument('config', default='model.py', help='test config file path')
+    parser.add_argument('checkpoint', default='weights.pth', help='checkpoint file')
     parser.add_argument('--out', help='output result file in pickle format')
     parser.add_argument(
         '--fuse-conv-bn',
@@ -30,6 +30,7 @@ def parse_args():
     parser.add_argument(
         '--format-only',
         action='store_true',
+        default=True,
         help='Format the output results without perform evaluation. It is'
         'useful when you want to format the result to a specific format and '
         'submit it to the test server')
@@ -72,6 +73,7 @@ def parse_args():
         '--eval-options',
         nargs='+',
         action=DictAction,
+        default={'jsonfile_prefix': './result'},
         help='custom options for evaluation, the key-value pair in xxx=yyy '
         'format will be kwargs for dataset.evaluate() function')
     parser.add_argument(
