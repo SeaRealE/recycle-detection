@@ -113,7 +113,7 @@ def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
     CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
     # set difficult to filter '2', '1', or do not filter, set '-1'
     if not geojsonpath:
-        images_list = glob(os.path.join(imageroot,'/*.jpg'))
+        images_list = glob(imageroot+'/*.jpg')
         img_id_map = {images_list[i].split('/')[-1]:i+1 for i in range(len(images_list))}
         data_dict = {}
         data_dict['images']=[]
@@ -146,7 +146,7 @@ def main():
     rootfolder = args.filepath
     geojson2coco(imageroot=rootfolder,
                  geojsonpath = None,
-                 destfile=os.path.join(rootfolder, '/testcoco.json'))
+                 destfile=rootfolder+'/testcoco.json')
 
     # inference
     assert args.out or args.eval or args.format_only or args.show \
