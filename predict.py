@@ -105,9 +105,8 @@ def parse_args():
         args.eval_options = args.options
     return args
 
-def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
-    CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
 
+def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
     # set difficult to filter '2', '1', or do not filter, set '-1'
     if not geojsonpath:
         images_list = glob(os.path.join(imageroot,'*.jpg'))
@@ -131,9 +130,10 @@ def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
             single_image['width'] = width
             single_image['height'] = height
             data_dict['images'].append(single_image)
-​
+            
         with open(destfile, 'w') as f_out:
             json.dump(data_dict, f_out)
+
 
 def main():
     args = parse_args()
