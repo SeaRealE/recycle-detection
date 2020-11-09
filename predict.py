@@ -2,6 +2,16 @@ import argparse
 import os
 import warnings
 
+import json
+from typing import List
+import math
+from glob import glob
+from tqdm import tqdm
+import cv2
+import numpy as np
+from PIL import Image
+import shutil
+
 import mmcv
 import torch
 from mmcv import Config, DictAction
@@ -95,10 +105,46 @@ def parse_args():
         args.eval_options = args.options
     return args
 
+def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
+    CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
+
+    # set difficult to filter '2', '1', or do not filter, set '-1'
+    if not geojsonpath:
+        images_list = glob(os.path.join(imageroot,'*.jpg'))
+        img_id_map = {images_list[i].split('/')[-1]:i+1 for i in range(len(images_list))}
+        data_dict = {}
+        data_dict['images']=[]
+        data_dict['categories'] = []
+        
+        for idex, name in enumerate(CLASS_NAMES_EN[1:]):
+            single_cat = {'id': idex + 1, 'name': name, 'supercategory': name}
+            data_dict['categories'].append(single_cat)
+            
+        for imgfile in tqdm(img_id_map, desc='saving img info'):
+            imagepath = os.path.join(imageroot, imgfile)
+            img_id = img_id_map[imgfile]
+            img = cv2.imread(imagepath)
+            height, width, c = img.shape
+            single_image = {}
+            single_image['file_name'] = imgfile
+            single_image['id'] = img_id
+            single_image['width'] = width
+            single_image['height'] = height
+            data_dict['images'].append(single_image)
+​
+        with open(destfile, 'w') as f_out:
+            json.dump(data_dict, f_out)
 
 def main():
     args = parse_args()
 
+    # data to json
+    rootfolder = './data/'
+    geojson2coco(imageroot=os.path.join(rootfolder, 'test/imgs'),
+                 geojsonpath = None,
+                 destfile=os.path.join(rootfolder, 'test/testcoco.json'))
+
+    # inference
     assert args.out or args.eval or args.format_only or args.show \
         or args.show_dir, \
         ('Please specify at least one operation (save/eval/format/show the '
