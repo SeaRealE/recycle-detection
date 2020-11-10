@@ -1,6 +1,20 @@
 dataset_type = 'CocoDataset'
 data_root = 'data'
-CLASSES = ('c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
+
+
+# model testing settings
+test_cfg = dict(
+    rpn=dict(
+        nms_across_levels=False,
+        nms_pre=1000,
+        nms_post=1000,
+        max_num=1000,
+        nms_thr=0.7,
+        min_bbox_size=0),
+    rcnn=dict(
+        score_thr=0.05,
+        nms=dict(type='nms', iou_threshold=0.5),
+        max_per_img=100))
 
 
 img_norm_cfg = dict(
@@ -128,21 +142,3 @@ model = dict(
                     loss_weight=1.0),
                 loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))
         ]))
-# model testing settings
-test_cfg = dict(
-    rpn=dict(
-        nms_across_levels=False,
-        nms_pre=1000,
-        nms_post=1000,
-        max_num=1000,
-        nms_thr=0.7,
-        min_bbox_size=0),
-    rcnn=dict(
-        score_thr=0.05,
-        nms=dict(type='nms', iou_threshold=0.5),
-        max_per_img=100))
-
-
-
-
-
