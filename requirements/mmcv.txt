@@ -1,4 +1,0 @@
-mmcv-full
-# -f https://download.openmmlab.com/mmcv/dist/index.html
-# mmcv-full==latest+torch1.5.0+cu102
-# mmcv-full==latest+torch1.6.0+cu101
