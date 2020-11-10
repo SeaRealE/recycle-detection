@@ -1,3 +1,10 @@
--r requirements/build.txt
--r requirements/mmcv.txt
--r requirements/runtime.txt
+# base ----------------------------------------
+cython
+numpy
+
+# mmcv ----------------------------------------
+mmcv-full
+
+# runtime -------------------------------------
+mmpycocotools
+terminaltables
