@@ -44,7 +44,6 @@ data = dict(
         ann_file='./'+data_root + '/testcoco.json',
         img_prefix='./'+data_root+'/',
         pipeline=test_pipeline))
-evaluation = dict(interval=12, metric='bbox')
 
 
 model = dict(
