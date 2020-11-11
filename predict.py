@@ -281,7 +281,7 @@ def main():
     with open('result.bbox.json') as json_file:
         json_data = json.load(json_file)
 
-    f = open('result.json', 'w')
+    f = open('submission.json', 'w')
     FD = {}
     for item in json_data:
         cur_id = item["image_id"]
