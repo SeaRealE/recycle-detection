@@ -59,7 +59,7 @@ def parse_args():
     parser.add_argument(
         '--show-score-thr',
         type=float,
-        default=0.98,
+        default=0.49,
         help='score threshold (default: 0.3)')
     parser.add_argument(
         '--gpu-collect',
