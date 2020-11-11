@@ -5,5 +5,6 @@ cython
 mmcv-full==1.1.6
 
 # runtime -------------------------------------
+tqdm
 mmpycocotools
 terminaltables
