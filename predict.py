@@ -5,14 +5,10 @@ import warnings
 import sys
 
 import json
-from typing import List
-import math
 from glob import glob
 from tqdm import tqdm
 import cv2
 import numpy as np
-from PIL import Image
-import shutil
 
 import mmcv
 import torch
