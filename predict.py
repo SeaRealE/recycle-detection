@@ -105,40 +105,73 @@ def parse_args():
     return args
 
 
-def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
-    CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
-    # set difficult to filter '2', '1', or do not filter, set '-1'
-    if not geojsonpath:
-        images_list = sorted(glob(imageroot+'/*.jpg'))
-        img_id_map = {images_list[i].split('/')[-1]:i+1 for i in range(len(images_list))}
-        data_dict = {}
-        data_dict['images']=[]
-        data_dict['categories'] = []
+# def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
+#     CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
+#     # set difficult to filter '2', '1', or do not filter, set '-1'
+#     if not geojsonpath:
+#         images_list = sorted(glob(imageroot+'/*.jpg'))
+#         img_id_map = {images_list[i].split('/')[-1]:i+1 for i in range(len(images_list))}
+#         data_dict = {}
+#         data_dict['images']=[]
+#         data_dict['categories'] = []
         
-        for idex, name in enumerate(CLASS_NAMES_EN[1:]):
-            single_cat = {'id': idex + 1, 'name': name, 'supercategory': name}
-            data_dict['categories'].append(single_cat)
+#         for idex, name in enumerate(CLASS_NAMES_EN[1:]):
+#             single_cat = {'id': idex + 1, 'name': name, 'supercategory': name}
+#             data_dict['categories'].append(single_cat)
             
-        for imgfile in tqdm(img_id_map, desc='saving img info'):
-            imagepath = os.path.join(imageroot, imgfile)
-            img_id = img_id_map[imgfile]
-            img = cv2.imread(imagepath)
-            height, width, c = img.shape
-            single_image = {}
-            single_image['file_name'] = imgfile
-            single_image['id'] = img_id
-            single_image['width'] = width
-            single_image['height'] = height
-            data_dict['images'].append(single_image)
+#         for imgfile in tqdm(img_id_map, desc='saving img info'):
+#             imagepath = os.path.join(imageroot, imgfile)
+#             img_id = img_id_map[imgfile]
+#             img = cv2.imread(imagepath)
+#             height, width, c = img.shape
+#             single_image = {}
+#             single_image['file_name'] = imgfile
+#             single_image['id'] = img_id
+#             single_image['width'] = width
+#             single_image['height'] = height
+#             data_dict['images'].append(single_image)
 
-        with open(destfile, 'w') as f_out:
-            json.dump(data_dict, f_out)
+#         with open(destfile, 'w') as f_out:
+#             json.dump(data_dict, f_out)
 
+def get_jsondata():
+    # ground_truth
+    with open('valcoco.json') as f:
+        data_dict = json.load(f)
+    realdata = data_dict['annotations']
+
+    real = {}
+    for data in realdata:
+        try:
+            if real[data['image_id']]:
+                if data['category_id'] in real[data['image_id']] :                
+                    continue
+                else :
+                    real[data['image_id']].append(data['category_id'])
+        except:
+            real[data['image_id']] = [data['category_id']]
+
+    # predict
+    with open('result.bbox.json') as f:
+        pred = json.load(f)
+
+    predict = {}
+    for data in pred:
+        try:
+            if predict[data['image_id']]: 
+                if data['category_id'] in predict[data['image_id']] :                
+                    continue
+                else :
+                    predict[data['image_id']].append(data['category_id'])
+        except:
+            predict[data['image_id']] = [data['category_id']]
+    return real, predict
+  
 
 def main():
     args = parse_args()   
     
-    # data to json
+    # test data to json
     rootfolder = args.filepath
     geojson2coco(imageroot=rootfolder,
                  geojsonpath = None,
@@ -158,20 +191,20 @@ def main():
         raise ValueError('The output file must be a pkl file.')
 
     cfg = Config.fromfile(args.config)
-    
+  
+    # change the test filepath
     cfg.data_root = args.filepath
-    
-    
     cfg.data.test['ann_file'] = args.filepath+'/testcoco.json'
     cfg.data.test['img_prefix'] = args.filepath+'/'
     
-    
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
+    
     # import modules from string list.
     if cfg.get('custom_imports', None):
         from mmcv.utils import import_modules_from_strings
         import_modules_from_strings(**cfg['custom_imports'])
+
     # set cudnn_benchmark
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
@@ -213,6 +246,19 @@ def main():
         dist=distributed,
         shuffle=False)
 
+    
+    # get f1score of hyperparameter
+###########################################################################
+#     np.set_printoptions(precision=2)
+#     #for rate in np.arange(0.38,0.58,0.01):
+#     #for rate in np.arange(0.4,1,0.1):
+#     for rate in np.arange(0.4,0.71,0.1):
+#         #args.show_score_thr = rate
+#         #cfg.test_cfg.rcnn.nms.iou_threshold = rate
+#         cfg.test_cfg.rcnn.score_thr = rate
+###########################################################################     
+
+    
     # build the model and load checkpoint
     model = build_detector(cfg.model, train_cfg=None, test_cfg=cfg.test_cfg)
     fp16_cfg = cfg.get('fp16', None)
@@ -257,6 +303,7 @@ def main():
             print(dataset.evaluate(outputs, **eval_kwargs))
 
     
+    # apply score_thr 
     with open('result.bbox.json') as f:
         pred = json.load(f)
 
@@ -272,8 +319,8 @@ def main():
     with open('result.bbox.json', 'w') as f:
         json.dump(pred,f,indent='\t')
 
-
-
+        
+    # convert to submmsion.json style
     with open('result.bbox.json') as json_file:
         json_data = json.load(json_file)
 
@@ -296,6 +343,33 @@ def main():
     FD = str(list(FD.values())).replace("'", '"')
     f.write(FD)
     f.close()
+    
+    
+    # get f1score
+####################################################################
+#         real, predict = get_jsondata()
+#         TP = 0
+#         FP = 0
+#         FN = 0
+#         for index in real.keys(): # image index
+#             try:
+#                 p = set(predict[index])
+#             except:
+#                 p = set()
+
+#             r = set(real[index])
+
+#             TP += len(r&p)
+#             FP += (len(p) - len(r&p))
+#             FN += (len(r) - len(r&p))
+
+#         precision = TP/(TP + FP)
+#         recall = TP/(TP + FN)
+#         f1score = 2*(precision * recall)/ (precision + recall)
+#         #print('\nscore = %.2f | f1 score = %.4f | TP = %d, FP = %d, FN = %d\n' %(args.show_score_thr, f1score, TP, FP, FN))
+#         #print('\niou = %.2f | f1 score = %.4f | TP = %d, FP = %d, FN = %d\n' %(rate, f1score, TP, FP, FN))
+#         print('\nscore_thr = %.2f | f1 score = %.4f | TP = %d, FP = %d, FN = %d\n' %(rate, f1score, TP, FP, FN))
+####################################################################
     
 
 if __name__ == '__main__':
