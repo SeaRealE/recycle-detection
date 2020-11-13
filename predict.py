@@ -172,10 +172,10 @@ def main():
     args = parse_args()   
     
     # test data to json
-    rootfolder = args.filepath
-    geojson2coco(imageroot=rootfolder,
-                 geojsonpath = None,
-                 destfile=rootfolder+'/testcoco.json')
+#     rootfolder = args.filepath
+#     geojson2coco(imageroot=rootfolder,
+#                  geojsonpath = None,
+#                  destfile=rootfolder+'/testcoco.json')
 
     # inference
     assert args.out or args.eval or args.format_only or args.show \
