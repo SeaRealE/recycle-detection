@@ -1,7 +1,6 @@
 dataset_type = 'CocoDataset'
 data_root = 'data'
 
-
 # model testing settings
 test_cfg = dict(
     rpn=dict(

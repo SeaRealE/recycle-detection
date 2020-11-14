@@ -1,8 +1,5 @@
 import argparse
 import os
-import warnings
-
-import sys
 
 import json
 from glob import glob
@@ -12,12 +9,11 @@ import numpy as np
 
 import mmcv
 import torch
-from mmcv import Config, DictAction
-from mmcv.cnn import fuse_conv_bn
-from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import get_dist_info, init_dist, load_checkpoint
+from mmcv import Config
+from mmcv.parallel import MMDataParallel
+from mmcv.runner import get_dist_info, load_checkpoint
 
-from mmdet.apis import multi_gpu_test, single_gpu_test
+from mmdet.apis import single_gpu_test
 from mmdet.core import wrap_fp16_model
 from mmdet.datasets import (build_dataloader, build_dataset,
                             replace_ImageToTensor)
@@ -28,178 +24,61 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='MMDet test (and eval) a model')
     parser.add_argument('filepath', help='test file path')
-    parser.add_argument('--config', default='model.py', help='test config file path')
-    parser.add_argument('--checkpoint', default='weights.pth', help='checkpoint file')
-    parser.add_argument('--out', help='output result file in pickle format')
-    parser.add_argument(
-        '--fuse-conv-bn',
-        action='store_true',
-        help='Whether to fuse conv and bn, this will slightly increase'
-        'the inference speed')
-    parser.add_argument(
-        '--format-only',
-        action='store_true',
-        default=True,
-        help='Format the output results without perform evaluation. It is'
-        'useful when you want to format the result to a specific format and '
-        'submit it to the test server')
-    parser.add_argument(
-        '--eval',
-        type=str,
-        nargs='+',
-        help='evaluation metrics, which depends on the dataset, e.g., "bbox",'
-        ' "segm", "proposal" for COCO, and "mAP", "recall" for PASCAL VOC')
-    parser.add_argument('--show', action='store_true', help='show results')
-    parser.add_argument(
-        '--show-dir', help='directory where painted images will be saved')
-    parser.add_argument(
-        '--show-score-thr',
-        type=float,
-        default=0.49,
-        help='score threshold (default: 0.3)')
-    parser.add_argument(
-        '--gpu-collect',
-        action='store_true',
-        help='whether to use gpu to collect results.')
-    parser.add_argument(
-        '--tmpdir',
-        help='tmp directory used for collecting results from multiple '
-        'workers, available when gpu-collect is not specified')
-    parser.add_argument(
-        '--cfg-options',
-        nargs='+',
-        action=DictAction,
-        help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file.')
-    parser.add_argument(
-        '--options',
-        nargs='+',
-        action=DictAction,
-        help='custom options for evaluation, the key-value pair in xxx=yyy '
-        'format will be kwargs for dataset.evaluate() function (deprecate), '
-        'change to --eval-options instead.')
-    parser.add_argument(
-        '--eval-options',
-        nargs='+',
-        action=DictAction,
-        default={'jsonfile_prefix': './result'},
-        help='custom options for evaluation, the key-value pair in xxx=yyy '
-        'format will be kwargs for dataset.evaluate() function')
-    parser.add_argument(
-        '--launcher',
-        choices=['none', 'pytorch', 'slurm', 'mpi'],
-        default='none',
-        help='job launcher')
-    parser.add_argument('--local_rank', type=int, default=0)
+    
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
-        os.environ['LOCAL_RANK'] = str(args.local_rank)
-
-    if args.options and args.eval_options:
-        raise ValueError(
-            '--options and --eval-options cannot be both '
-            'specified, --options is deprecated in favor of --eval-options')
-    if args.options:
-        warnings.warn('--options is deprecated in favor of --eval-options')
-        args.eval_options = args.options
+        os.environ['LOCAL_RANK'] = str(0)
+        
     return args
 
 
-# def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
-#     CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
-#     # set difficult to filter '2', '1', or do not filter, set '-1'
-#     if not geojsonpath:
-#         images_list = sorted(glob(imageroot+'/*.jpg'))
-#         img_id_map = {images_list[i].split('/')[-1]:i+1 for i in range(len(images_list))}
-#         data_dict = {}
-#         data_dict['images']=[]
-#         data_dict['categories'] = []
+def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
+    CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
+    # set difficult to filter '2', '1', or do not filter, set '-1'
+    if not geojsonpath:
+        images_list = sorted(glob(imageroot+'/*.jpg'))
+        img_id_map = {images_list[i].split('/')[-1]:i+1 for i in range(len(images_list))}
+        data_dict = {}
+        data_dict['images']=[]
+        data_dict['categories'] = []
         
-#         for idex, name in enumerate(CLASS_NAMES_EN[1:]):
-#             single_cat = {'id': idex + 1, 'name': name, 'supercategory': name}
-#             data_dict['categories'].append(single_cat)
+        for idex, name in enumerate(CLASS_NAMES_EN[1:]):
+            single_cat = {'id': idex + 1, 'name': name, 'supercategory': name}
+            data_dict['categories'].append(single_cat)
             
-#         for imgfile in tqdm(img_id_map, desc='saving img info'):
-#             imagepath = os.path.join(imageroot, imgfile)
-#             img_id = img_id_map[imgfile]
-#             img = cv2.imread(imagepath)
-#             height, width, c = img.shape
-#             single_image = {}
-#             single_image['file_name'] = imgfile
-#             single_image['id'] = img_id
-#             single_image['width'] = width
-#             single_image['height'] = height
-#             data_dict['images'].append(single_image)
+        for imgfile in tqdm(img_id_map, desc='saving img info'):
+            imagepath = os.path.join(imageroot, imgfile)
+            img_id = img_id_map[imgfile]
+            img = cv2.imread(imagepath)
+            height, width, c = img.shape
+            single_image = {}
+            single_image['file_name'] = imgfile
+            single_image['id'] = img_id
+            single_image['width'] = width
+            single_image['height'] = height
+            data_dict['images'].append(single_image)
 
-#         with open(destfile, 'w') as f_out:
-#             json.dump(data_dict, f_out)
+        with open(destfile, 'w') as f_out:
+            json.dump(data_dict, f_out)
 
-def get_jsondata():
-    # ground_truth
-    with open('valcoco.json') as f:
-        data_dict = json.load(f)
-    realdata = data_dict['annotations']
-
-    real = {}
-    for data in realdata:
-        try:
-            if real[data['image_id']]:
-                if data['category_id'] in real[data['image_id']] :                
-                    continue
-                else :
-                    real[data['image_id']].append(data['category_id'])
-        except:
-            real[data['image_id']] = [data['category_id']]
-
-    # predict
-    with open('result.bbox.json') as f:
-        pred = json.load(f)
-
-    predict = {}
-    for data in pred:
-        try:
-            if predict[data['image_id']]: 
-                if data['category_id'] in predict[data['image_id']] :                
-                    continue
-                else :
-                    predict[data['image_id']].append(data['category_id'])
-        except:
-            predict[data['image_id']] = [data['category_id']]
-    return real, predict
-  
 
 def main():
-    args = parse_args()   
-    
+    args = parse_args()  
+        
     # test data to json
-#     rootfolder = args.filepath
-#     geojson2coco(imageroot=rootfolder,
-#                  geojsonpath = None,
-#                  destfile=rootfolder+'/testcoco.json')
+    rootfolder = '/dataset/4th_track3/' # args.filepath
+    geojson2coco(imageroot=rootfolder,
+                 geojsonpath = None,
+                 destfile='./testcoco.json')
 
     # inference
-    assert args.out or args.eval or args.format_only or args.show \
-        or args.show_dir, \
-        ('Please specify at least one operation (save/eval/format/show the '
-         'results / save the results) with the argument "--out", "--eval"'
-         ', "--format-only", "--show" or "--show-dir"')
-
-    if args.eval and args.format_only:
-        raise ValueError('--eval and --format_only cannot be both specified')
-
-    if args.out is not None and not args.out.endswith(('.pkl', '.pickle')):
-        raise ValueError('The output file must be a pkl file.')
-
-    cfg = Config.fromfile(args.config)
+    cfg = Config.fromfile('model.py')
   
     # change the test filepath
-    cfg.data_root = args.filepath
-    cfg.data.test['ann_file'] = args.filepath+'/testcoco.json'
-    cfg.data.test['img_prefix'] = args.filepath+'/'
-    
-    if args.cfg_options is not None:
-        cfg.merge_from_dict(args.cfg_options)
-    
+    cfg.data_root = rootfolder
+    cfg.data.test['ann_file'] = './testcoco.json'
+    cfg.data.test['img_prefix'] = rootfolder
+        
     # import modules from string list.
     if cfg.get('custom_imports', None):
         from mmcv.utils import import_modules_from_strings
@@ -226,13 +105,6 @@ def main():
         for ds_cfg in cfg.data.test:
             ds_cfg.test_mode = True
 
-    # init distributed env first, since logger depends on the dist info.
-    if args.launcher == 'none':
-        distributed = False
-    else:
-        distributed = True
-        init_dist(args.launcher, **cfg.dist_params)
-
     # build the dataloader
     samples_per_gpu = cfg.data.test.pop('samples_per_gpu', 1)
     if samples_per_gpu > 1:
@@ -243,30 +115,16 @@ def main():
         dataset,
         samples_per_gpu=samples_per_gpu,
         workers_per_gpu=cfg.data.workers_per_gpu,
-        dist=distributed,
-        shuffle=False)
+        dist=False,
+        shuffle=False) 
 
-    
-    # get f1score of hyperparameter
-###########################################################################
-#     np.set_printoptions(precision=2)
-#     #for rate in np.arange(0.38,0.58,0.01):
-#     #for rate in np.arange(0.4,1,0.1):
-#     for rate in np.arange(0.4,0.71,0.1):
-#         #args.show_score_thr = rate
-#         #cfg.test_cfg.rcnn.nms.iou_threshold = rate
-#         cfg.test_cfg.rcnn.score_thr = rate
-###########################################################################     
-
-    
     # build the model and load checkpoint
     model = build_detector(cfg.model, train_cfg=None, test_cfg=cfg.test_cfg)
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
         wrap_fp16_model(model)
-    checkpoint = load_checkpoint(model, args.checkpoint, map_location='cpu')
-    if args.fuse_conv_bn:
-        model = fuse_conv_bn(model)
+    checkpoint = load_checkpoint(model, 'weights.pth', map_location='cpu')
+
     # old versions did not save class info in checkpoints, this walkaround is
     # for backward compatibility
     if 'CLASSES' in checkpoint['meta']:
@@ -274,35 +132,16 @@ def main():
     else:
         model.CLASSES = dataset.CLASSES
 
-    if not distributed:
-        model = MMDataParallel(model, device_ids=[0])
-        outputs = single_gpu_test(model, data_loader, args.show, args.show_dir,
-                                  args.show_score_thr)
-    else:
-        model = MMDistributedDataParallel(
-            model.cuda(),
-            device_ids=[torch.cuda.current_device()],
-            broadcast_buffers=False)
-        outputs = multi_gpu_test(model, data_loader, args.tmpdir,
-                                 args.gpu_collect)
+    model = MMDataParallel(model, device_ids=[0])
+    show_score_thr = 0.49
+    outputs = single_gpu_test(model, data_loader, False, None, show_score_thr)
 
     rank, _ = get_dist_info()
     if rank == 0:
-        if args.out:
-            print(f'\nwriting results to {args.out}')
-            mmcv.dump(outputs, args.out)
-        kwargs = {} if args.eval_options is None else args.eval_options
-        if args.format_only:
-            dataset.format_results(outputs, **kwargs)
-        if args.eval:
-            eval_kwargs = cfg.get('evaluation', {}).copy()
-            # hard-code way to remove EvalHook args
-            for key in ['interval', 'tmpdir', 'start', 'gpu_collect']:
-                eval_kwargs.pop(key, None)
-            eval_kwargs.update(dict(metric=args.eval, **kwargs))
-            print(dataset.evaluate(outputs, **eval_kwargs))
+        kwargs = {'jsonfile_prefix': './result'}
+        dataset.format_results(outputs, **kwargs)
 
-    
+    # json file    
     # apply score_thr 
     with open('result.bbox.json') as f:
         pred = json.load(f)
@@ -310,26 +149,25 @@ def main():
     while True:
         count = 0
         for data in pred:
-            if data['score'] < args.show_score_thr:
+            if data['score'] < show_score_thr:
                 pred.remove(data)
                 count +=1
         if count ==0:
             break
-            
+
     with open('result.bbox.json', 'w') as f:
         json.dump(pred,f,indent='\t')
 
-        
-    # convert to submmsion.json style
+
+    # convert to submission style
     with open('result.bbox.json') as json_file:
         json_data = json.load(json_file)
 
-    f = open('submission.json', 'w')
+    f = open('3-jaebb95@gmail.com-result.json', 'w')
     FD = {}
     for item in json_data:
         cur_id = item["image_id"]
         container = {}
-        #print(item)
         if cur_id not in FD:
             container["id"] = cur_id
             container["file_name"] = item["file_name"]
@@ -343,34 +181,7 @@ def main():
     FD = str(list(FD.values())).replace("'", '"')
     f.write(FD)
     f.close()
-    
-    
-    # get f1score
-####################################################################
-#         real, predict = get_jsondata()
-#         TP = 0
-#         FP = 0
-#         FN = 0
-#         for index in real.keys(): # image index
-#             try:
-#                 p = set(predict[index])
-#             except:
-#                 p = set()
 
-#             r = set(real[index])
-
-#             TP += len(r&p)
-#             FP += (len(p) - len(r&p))
-#             FN += (len(r) - len(r&p))
-
-#         precision = TP/(TP + FP)
-#         recall = TP/(TP + FN)
-#         f1score = 2*(precision * recall)/ (precision + recall)
-#         #print('\nscore = %.2f | f1 score = %.4f | TP = %d, FP = %d, FN = %d\n' %(args.show_score_thr, f1score, TP, FP, FN))
-#         #print('\niou = %.2f | f1 score = %.4f | TP = %d, FP = %d, FN = %d\n' %(rate, f1score, TP, FP, FN))
-#         print('\nscore_thr = %.2f | f1 score = %.4f | TP = %d, FP = %d, FN = %d\n' %(rate, f1score, TP, FP, FN))
-####################################################################
-    
 
 if __name__ == '__main__':
     main()

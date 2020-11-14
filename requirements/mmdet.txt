@@ -1,0 +1,4 @@
+cython
+tqdm
+mmpycocotools
+terminaltables
