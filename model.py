@@ -1,5 +1,5 @@
 dataset_type = 'CocoDataset'
-data_root = 'data'
+data_root = ''
 
 # model testing settings
 test_cfg = dict(
@@ -41,7 +41,7 @@ data = dict(
     test=dict(
         type=dataset_type,
         ann_file='./testcoco.json',
-        img_prefix='./'+data_root+'/',
+        img_prefix='',
         pipeline=test_pipeline))
 
 

@@ -1,3 +1,9 @@
+try:
+    import pycocotools
+except ImportError as e:
+    import pip
+    pip.main(['install', 'mmpycocotools'])
+
 import argparse
 import os
 
@@ -66,10 +72,10 @@ def main():
     args = parse_args()  
         
     # filepath parameter
-    filepath = args.filepath
+    filepath = args.filepath[:-1] if args.filepath.endswith('/') else args.filepath
 
     # test data to json
-    geojson2coco(imageroot='/dataset/4th_track3',
+    geojson2coco(imageroot= filepath,
                  geojsonpath = None,
                  destfile='./testcoco.json')
 
@@ -77,8 +83,8 @@ def main():
     cfg = Config.fromfile('model.py')
   
     # change the test filepath
-    cfg.data_root = '/dataset/4th_track3'
-    cfg.data.test['img_prefix'] = '/dataset/4th_track3/'
+    cfg.data_root = filepath
+    cfg.data.test['img_prefix'] = filepath
         
     # import modules from string list.
     if cfg.get('custom_imports', None):
