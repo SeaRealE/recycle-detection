@@ -65,9 +65,11 @@ def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
 def main():
     args = parse_args()  
         
+    # filepath parameter
+    filepath = args.filepath
+
     # test data to json
-    rootfolder = '/dataset/4th_track3/' # args.filepath
-    geojson2coco(imageroot=rootfolder,
+    geojson2coco(imageroot='/dataset/4th_track3',
                  geojsonpath = None,
                  destfile='./testcoco.json')
 
@@ -75,9 +77,8 @@ def main():
     cfg = Config.fromfile('model.py')
   
     # change the test filepath
-    cfg.data_root = rootfolder
-    cfg.data.test['ann_file'] = './testcoco.json'
-    cfg.data.test['img_prefix'] = rootfolder
+    cfg.data_root = '/dataset/4th_track3'
+    cfg.data.test['img_prefix'] = '/dataset/4th_track3/'
         
     # import modules from string list.
     if cfg.get('custom_imports', None):

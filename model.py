@@ -40,7 +40,7 @@ data = dict(
     workers_per_gpu=4,
     test=dict(
         type=dataset_type,
-        ann_file='./'+data_root + '/testcoco.json',
+        ann_file='./testcoco.json',
         img_prefix='./'+data_root+'/',
         pipeline=test_pipeline))
 
