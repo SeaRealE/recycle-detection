@@ -170,7 +170,7 @@ def main():
     with open('result.bbox.json') as json_file:
         json_data = json.load(json_file)
 
-    f = open('3-jaebb95@gmail.com-result.json', 'w')
+    f = open('t3_res_KVL.json', 'w')
     FD = {}
     for item in json_data:
         cur_id = item["image_id"]
