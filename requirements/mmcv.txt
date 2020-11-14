@@ -1,1 +1,0 @@
-mmcv-full==1.1.6+torch1.5.0+cu101 
