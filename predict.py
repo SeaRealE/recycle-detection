@@ -170,7 +170,7 @@ def main():
     with open('result.bbox.json') as json_file:
         json_data = json.load(json_file)
 
-    f = open('t3_res_KVL.json', 'w')
+    f = open('t3_res_0030.json', 'w')
     FD = {}
     for item in json_data:
         cur_id = item["image_id"]
@@ -178,11 +178,12 @@ def main():
         if cur_id not in FD:
             container["id"] = cur_id
             container["file_name"] = item["file_name"]
-            x, y, w, h = item["bbox"]
+            x, y, w, h = [int(i) for i in item["bbox"]]
             container["object"] = [{"box":[x, y, x+w, y+h], "label": "c" + str(item["category_id"])}]
             FD[cur_id] = container
         else:
             container = FD[cur_id]
+            x, y, w, h = [int(i) for i in item["bbox"]]
             container["object"].append({"box":[x, y, x+w, y+h], "label": "c" + str(item["category_id"])})
 
     FD = str(list(FD.values())).replace("'", '"')
