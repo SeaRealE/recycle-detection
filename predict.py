@@ -174,7 +174,7 @@ def main():
     
     size = len(glob(filepath + '/*.jpg'))
     check = [False for i in range(size)]
-    filename_list = [name[len(imageroot)+1:] for name in images_list]
+    filename_list = [name[len(filepath)+1:] for name in images_list]
     dic = OrderedDict({key:{'image_id': key, 'file_name': filename_list[key], 'object':[{'box':[], 'label': ""}]} for key in range(size)})
     
     f = open('t3_res_0030.json', 'w')
