@@ -167,29 +167,26 @@ def main():
 
 
     # convert to submission style
-    with open('result.bbox.json') as json_file:
-        json_data = json.load(json_file)
-
+    size = len(glob(filepath + '/*.jpg'))
+    check = [False for i in range(size)]
+    dic = OrderedDict({key:{'image_id': key, 'file_name': 'image{}.jpg'.format(key+1), 'object':[{'box':[], 'label': ""}]} for key in range(size)})
+    
     f = open('t3_res_0030.json', 'w')
-    FD = {}
+
     for item in json_data:
-        cur_id = item["image_id"]
-        container = {}
-        if cur_id not in FD:
-            container["id"] = cur_id
-            container["file_name"] = item["file_name"]
+        cur_id = item["image_id"] - 1
+
+        if check[cur_id] == False: # nothing 
             x, y, w, h = [int(i) for i in item["bbox"]]
-            container["object"] = [{"box":[x, y, x+w, y+h], "label": "c" + str(item["category_id"])}]
-            FD[cur_id] = container
+            dic[cur_id]['object'] = [{"box":[x, y, x+w, y+h], "label": "c" + str(item["category_id"])}]
+            check[cur_id] = True
         else:
-            container = FD[cur_id]
             x, y, w, h = [int(i) for i in item["bbox"]]
-            container["object"].append({"box":[x, y, x+w, y+h], "label": "c" + str(item["category_id"])})
+            dic[cur_id]["object"].append({"box":[x, y, x+w, y+h], "label": "c" + str(item["category_id"])})
 
-    FD = str(list(FD.values())).replace("'", '"')
-    f.write(FD)
+    dic = str(list(dic.values())).replace("'", '"')
+    f.write(dic)
     f.close()
-
 
 if __name__ == '__main__':
     main()
