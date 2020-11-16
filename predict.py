@@ -30,7 +30,7 @@ from mmdet.models import build_detector
 def parse_args():
     parser = argparse.ArgumentParser(
         description='MMDet test (and eval) a model')
-    parser.add_argument('filepath', help='test file path')
+    parser.add_argument('filepath', default='/dataset/4th_track3/', help='test file path')
     
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
