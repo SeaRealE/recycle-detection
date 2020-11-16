@@ -10,3 +10,4 @@ numpy
 tqdm
 matplotlib
 terminaltables
+opencv-python
