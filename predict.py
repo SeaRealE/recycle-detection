@@ -12,6 +12,7 @@ from glob import glob
 from tqdm import tqdm
 import cv2
 import numpy as np
+from collections import OrderedDict
 
 import mmcv
 import torch
@@ -79,7 +80,7 @@ def main():
                  geojsonpath = None,
                  destfile='./testcoco.json')
 
-    # inference
+    # load model.py
     cfg = Config.fromfile('model.py')
   
     # change the test filepath
@@ -165,14 +166,15 @@ def main():
     with open('result.bbox.json', 'w') as f:
         json.dump(pred,f,indent='\t')
 
-
     # convert to submission style
+    with open('result.bbox.json') as json_file:
+        json_data = json.load(json_file)
+    
     size = len(glob(filepath + '/*.jpg'))
     check = [False for i in range(size)]
     dic = OrderedDict({key:{'image_id': key, 'file_name': 'image{}.jpg'.format(key+1), 'object':[{'box':[], 'label': ""}]} for key in range(size)})
     
     f = open('t3_res_0030.json', 'w')
-
     for item in json_data:
         cur_id = item["image_id"] - 1
 
