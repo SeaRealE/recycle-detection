@@ -67,6 +67,8 @@ def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
 
         with open(destfile, 'w') as f_out:
             json.dump(data_dict, f_out)
+    
+        return images_list
 
 
 def main():
@@ -76,9 +78,9 @@ def main():
     filepath = args.filepath[:-1] if args.filepath.endswith('/') else args.filepath
 
     # test data to json
-    geojson2coco(imageroot= filepath,
-                 geojsonpath = None,
-                 destfile='./testcoco.json')
+    images_list = geojson2coco(imageroot= filepath,
+                    geojsonpath = None,
+                    destfile='./testcoco.json')
 
     # load model.py
     cfg = Config.fromfile('model.py')
@@ -172,7 +174,8 @@ def main():
     
     size = len(glob(filepath + '/*.jpg'))
     check = [False for i in range(size)]
-    dic = OrderedDict({key:{'image_id': key, 'file_name': 'image{}.jpg'.format(key+1), 'object':[{'box':[], 'label': ""}]} for key in range(size)})
+    filename_list = [name[len(imageroot)+1:] for name in images_list]
+    dic = OrderedDict({key:{'image_id': key, 'file_name': filename_list[key], 'object':[{'box':[], 'label': ""}]} for key in range(size)})
     
     f = open('t3_res_0030.json', 'w')
     for item in json_data:
