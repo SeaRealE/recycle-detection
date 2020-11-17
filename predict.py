@@ -1,8 +1,8 @@
-try:
-    import pycocotools
-except ImportError as e:
-    import pip
-    pip.main(['install', 'mmpycocotools'])
+# try:
+#     import pycocotools
+# except ImportError as e:
+#     import pip
+#     pip.main(['install', 'mmpycocotools'])
 
 import argparse
 import os
