@@ -179,7 +179,7 @@ def main():
     
     f = open('t3_res_0030.json', 'w')
     for item in json_data:
-        cur_id = item["id"] - 1
+        cur_id = item["image_id"] - 1
 
         if check[cur_id] == False: # nothing 
             x, y, w, h = [int(i) for i in item["bbox"]]
@@ -189,9 +189,15 @@ def main():
             x, y, w, h = [int(i) for i in item["bbox"]]
             dic[cur_id]["object"].append({"box":[x, y, x+w, y+h], "label": "c" + str(item["category_id"])})
 
-    dic = str(list(dic.values())).replace("'", '"')
-    f.write(dic)
+    dic = list(dic.values())
+    last = {"annotations":dic}
+    last = str(last).replace("'", '"')
+    
+    f.write(last)
     f.close()
+    
+    os.remove('result.bbox.json')
+    os.remove('testcoco.json')
 
 if __name__ == '__main__':
     main()
