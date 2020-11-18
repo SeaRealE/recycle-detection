@@ -3,7 +3,7 @@ import subprocess
 import sys
 from collections import defaultdict
 
-import cv2
+# import cv2
 import mmcv
 import torch
 import torchvision
@@ -50,7 +50,7 @@ def collect_env():
 
     env_info['TorchVision'] = torchvision.__version__
 
-    env_info['OpenCV'] = cv2.__version__
+    # env_info['OpenCV'] = cv2.__version__
 
     env_info['MMCV'] = mmcv.__version__
     env_info['MMDetection'] = mmdet.__version__ + '+' + get_git_hash()[:7]
