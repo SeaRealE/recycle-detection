@@ -11,7 +11,7 @@ import json
 import natsort
 from glob import glob
 from tqdm import tqdm
-import cv2
+from PIL import Image
 import numpy as np
 from collections import OrderedDict
 
@@ -57,8 +57,8 @@ def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
             
         for imgfile in tqdm(img_id_map, desc='saving img info'):
             imagepath = os.path.join(imageroot, imgfile)
-            img_id = img_id_map[imgfile]
-            img = cv2.imread(imagepath)
+            img_id = img_id_map[imgfile]            
+            im = np.array(Image.open(imagepath))
             height, width, c = img.shape
             single_image = {}
             single_image['file_name'] = imgfile
