@@ -90,7 +90,9 @@ def main():
     # change the test filepath
     cfg.data_root = filepath
     cfg.data.test['img_prefix'] = filepath
-        
+    cfg.data.test['ann_file'] = os.path.dirname(os.path.realpath(__file__))+'/testcoco.json'
+      
+      
     # import modules from string list.
     if cfg.get('custom_imports', None):
         from mmcv.utils import import_modules_from_strings
