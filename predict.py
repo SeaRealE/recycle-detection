@@ -145,17 +145,17 @@ def main():
         model.CLASSES = dataset.CLASSES
 
     model = MMDataParallel(model, device_ids=[0])
-    show_score_thr = 0.49
+    show_score_thr = 0.5
     outputs = single_gpu_test(model, data_loader, False, None, show_score_thr)
 
     rank, _ = get_dist_info()
     if rank == 0:
-        kwargs = {'jsonfile_prefix': './result'}
+        kwargs = {'jsonfile_prefix': os.path.dirname(os.path.realpath(__file__))+'/result'}
         dataset.format_results(outputs, **kwargs)
 
     # json file    
     # apply score_thr 
-    with open('result.bbox.json') as f:
+    with open(os.path.dirname(os.path.realpath(__file__))+'/result.bbox.json') as f:
         pred = json.load(f)
 
     while True:
@@ -167,18 +167,18 @@ def main():
         if count ==0:
             break
 
-    with open('result.bbox.json', 'w') as f:
+    with open(os.path.dirname(os.path.realpath(__file__))+'/result.bbox.json', 'w') as f:
         json.dump(pred,f,indent='\t')
 
     # convert to submission style
-    with open('result.bbox.json') as json_file:
+    with open(os.path.dirname(os.path.realpath(__file__))+'/result.bbox.json') as json_file:
         json_data = json.load(json_file)
     
     size = len(glob(filepath + '/*.jpg'))
     check = [False for i in range(size)]
     dic = OrderedDict({key:{'id': key+1, 'file_name': images_list[key].split('/')[-1], 'object':[{'box':[], 'label': ""}]} for key in range(size)})
     
-    f = open('t3_res_0030.json', 'w')
+    f = open(os.path.dirname(os.path.realpath(__file__))+'/t3_res_0030.json', 'w')
     for item in json_data:
         cur_id = item["image_id"] - 1
 
