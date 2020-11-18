@@ -27,7 +27,6 @@ from mmdet.datasets import (build_dataloader, build_dataset,
                             replace_ImageToTensor)
 from mmdet.models import build_detector
 
-os.path.dirname(os.path.realpath(__file__))
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -86,7 +85,7 @@ def main():
                     destfile='./testcoco.json')
 
     # load model.py
-    cfg = Config.fromfile('model.py')
+    cfg = Config.fromfile(os.path.dirname(os.path.realpath(__file__))+'/model.py')
   
     # change the test filepath
     cfg.data_root = filepath
@@ -136,7 +135,7 @@ def main():
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
         wrap_fp16_model(model)
-    checkpoint = load_checkpoint(model, 'weights.pth', map_location='cpu')
+    checkpoint = load_checkpoint(model, os.path.dirname(os.path.realpath(__file__))+'/weights.pth', map_location='cpu')
 
     # old versions did not save class info in checkpoints, this walkaround is
     # for backward compatibility
