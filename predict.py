@@ -82,7 +82,7 @@ def main():
     # test data to json
     images_list = geojson2coco(imageroot= filepath,
                     geojsonpath = None,
-                    destfile='./testcoco.json')
+                    destfile=os.path.dirname(os.path.realpath(__file__))+'/testcoco.json')
 
     # load model.py
     cfg = Config.fromfile(os.path.dirname(os.path.realpath(__file__))+'/model.py')
@@ -197,8 +197,8 @@ def main():
     f.write(last)
     f.close()
     
-    os.remove('result.bbox.json')
-    os.remove('testcoco.json')
+    os.remove(os.path.dirname(os.path.realpath(__file__))+'/result.bbox.json')
+    os.remove(os.path.dirname(os.path.realpath(__file__))+'/testcoco.json')
 
 if __name__ == '__main__':
     main()
