@@ -44,7 +44,8 @@ def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
     CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
     # set difficult to filter '2', '1', or do not filter, set '-1'
     if not geojsonpath:
-        images_list = natsort.natsorted(glob(imageroot+'/*.jpg'))        
+        # images_list = natsort.natsorted(glob(imageroot+'/*.jpg'))        
+        images_list = glob(imageroot+'/*.jpg')
         img_id_map = {images_list[i].split('/')[-1]:i+1 for i in range(len(images_list))}
         data_dict = {}
         data_dict['images']=[]
@@ -175,7 +176,7 @@ def main():
     
     size = len(glob(filepath + '/*.jpg'))
     check = [False for i in range(size)]
-    dic = OrderedDict({key:{'id': key, 'file_name': images_list[key].split('/')[-1], 'object':[{'box':[], 'label': ""}]} for key in range(size)})
+    dic = OrderedDict({key:{'id': key+1, 'file_name': images_list[key].split('/')[-1], 'object':[{'box':[], 'label': ""}]} for key in range(size)})
     
     f = open('t3_res_0030.json', 'w')
     for item in json_data:
