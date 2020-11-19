@@ -1,14 +1,14 @@
-# try:
-#     import pycocotools
-# except ImportError as e:
-#     import pip
-#     pip.main(['install', 'mmpycocotools'])
+try:
+    import pycocotools
+except ImportError as e:
+    import pip
+    pip.main(['install', 'mmpycocotools'])
 
 import argparse
 import os
 
 import json
-import natsort
+# import natsort
 from glob import glob
 from tqdm import tqdm
 import cv2
