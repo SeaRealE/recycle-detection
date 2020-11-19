@@ -1,3 +1,5 @@
+torch
+torchvision
 addict==2.3.0
 cycler==0.10.0
 Cython==0.29.21 
