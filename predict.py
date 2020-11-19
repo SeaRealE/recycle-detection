@@ -1,14 +1,13 @@
-import pip
-pip.main(['cache', 'purge'])
-
 try:
     import pycocotools
 except ImportError as e:
+    import pip
     pip.main(['install', 'mmpycocotools'])
 
 try:
     import mmcv
 except ImportError as e:
+    import pip
     pip.main(['install', 'mmcv-full==1.1.6'])
 
 
@@ -16,7 +15,7 @@ import argparse
 import os
 
 import json
-import natsort
+# import natsort
 from glob import glob
 from tqdm import tqdm
 import cv2
@@ -52,8 +51,8 @@ def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
     CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
     # set difficult to filter '2', '1', or do not filter, set '-1'
     if not geojsonpath:
-        images_list = natsort.natsorted(glob(imageroot+'/*.jpg'))        
-        # images_list = glob(imageroot+'/*.jpg')
+        # images_list = natsort.natsorted(glob(imageroot+'/*.jpg'))        
+        images_list = glob(imageroot+'/*.jpg')
         img_id_map = {images_list[i].split('/')[-1]:i+1 for i in range(len(images_list))}
         data_dict = {}
         data_dict['images']=[]
@@ -207,8 +206,22 @@ def main():
     f.write(last)
     f.close()
     
+    with open(os.path.dirname(os.path.realpath(__file__))+'/t3_res_0030.json') as f:
+        data_dict = json.load(f)
+    
+    for i in data_dict["annotations"]:
+        for data in i['object']:
+            if data['label'] == "":
+                data['label']='c1'
+                data['box'] = [0, 0, 300, 300]
+    
+    with open(os.path.dirname(os.path.realpath(__file__))+'/t3_res_0030.json', 'w') as f:
+        json.dump(data_dict,f,indent='\t')
+    
     os.remove(os.path.dirname(os.path.realpath(__file__))+'/result.bbox.json')
     os.remove(os.path.dirname(os.path.realpath(__file__))+'/testcoco.json')
+    
+    
 
 if __name__ == '__main__':
     main()
