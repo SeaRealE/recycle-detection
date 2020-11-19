@@ -16,7 +16,7 @@ import argparse
 import os
 
 import json
-# import natsort
+import natsort
 from glob import glob
 from tqdm import tqdm
 import cv2
@@ -52,8 +52,8 @@ def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
     CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
     # set difficult to filter '2', '1', or do not filter, set '-1'
     if not geojsonpath:
-        # images_list = natsort.natsorted(glob(imageroot+'/*.jpg'))        
-        images_list = glob(imageroot+'/*.jpg')
+        images_list = natsort.natsorted(glob(imageroot+'/*.jpg'))        
+        # images_list = glob(imageroot+'/*.jpg')
         img_id_map = {images_list[i].split('/')[-1]:i+1 for i in range(len(images_list))}
         data_dict = {}
         data_dict['images']=[]
