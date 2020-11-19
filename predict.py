@@ -1,13 +1,14 @@
+import pip
+pip.main(['cache', 'purge'])
+
 try:
     import pycocotools
 except ImportError as e:
-    import pip
     pip.main(['install', 'mmpycocotools'])
 
 try:
     import mmcv
 except ImportError as e:
-    import pip
     pip.main(['install', 'mmcv-full==1.1.6'])
 
 
