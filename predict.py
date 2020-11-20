@@ -88,8 +88,8 @@ def main():
 
     # test data to json
     images_list = geojson2coco(imageroot= filepath,
-                    geojsonpath = None,
-                    destfile=os.path.dirname(os.path.realpath(__file__))+'/testcoco.json')
+                              geojsonpath = None,
+                              destfile=os.path.dirname(os.path.realpath(__file__))+'/testcoco.json')
 
     # load model.py
     cfg = Config.fromfile(os.path.dirname(os.path.realpath(__file__))+'/model.py')
@@ -97,8 +97,7 @@ def main():
     # change the test filepath
     cfg.data_root = filepath
     cfg.data.test['img_prefix'] = filepath
-    cfg.data.test['ann_file'] = os.path.dirname(os.path.realpath(__file__))+'/testcoco.json'
-      
+    cfg.data.test['ann_file'] = os.path.dirname(os.path.realpath(__file__))+'/testcoco.json'     
       
     # import modules from string list.
     if cfg.get('custom_imports', None):
@@ -206,21 +205,8 @@ def main():
     f.write(last)
     f.close()
     
-    with open(os.path.dirname(os.path.realpath(__file__))+'/t3_res_0030.json') as f:
-        data_dict = json.load(f)
-    
-    for i in data_dict["annotations"]:
-        for data in i['object']:
-            if data['label'] == "":
-                data['label']='c1'
-                data['box'] = [0, 0, 300, 300]
-    
-    with open(os.path.dirname(os.path.realpath(__file__))+'/t3_res_0030.json', 'w') as f:
-        json.dump(data_dict,f,indent='\t')
-    
     os.remove(os.path.dirname(os.path.realpath(__file__))+'/result.bbox.json')
     os.remove(os.path.dirname(os.path.realpath(__file__))+'/testcoco.json')
-    
     
 
 if __name__ == '__main__':
