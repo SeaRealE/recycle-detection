@@ -14,8 +14,7 @@ $ git clone https://github.com/SeaRealE/recycle_detection.git
 $ cd recycle_detection
 $ pip install -r requirements.txt
 $ pip install mmpycocotools
-$ pip install mmcv-full==1.1.6+torch1.5.0+cu102 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html 
-              --use-deprecated=legacy-resolver
+$ pip install mmcv-full==1.1.6+torch1.5.0+cu102 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html --use-deprecated=legacy-resolver
 ```
 
 ## Run
