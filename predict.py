@@ -1,21 +1,7 @@
-try:
-    import pycocotools
-except ImportError as e:
-    import pip
-    pip.main(['install', 'mmpycocotools'])
-
-try:
-    import mmcv
-except ImportError as e:
-    import pip
-    pip.main(['install', 'mmcv-full==1.1.6'])
-
-
 import argparse
 import os
 
 import json
-# import natsort
 from glob import glob
 from tqdm import tqdm
 import cv2
@@ -48,10 +34,10 @@ def parse_args():
 
 
 def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
+    
     CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
-    # set difficult to filter '2', '1', or do not filter, set '-1'
-    if not geojsonpath:
-        # images_list = natsort.natsorted(glob(imageroot+'/*.jpg'))        
+
+    if not geojsonpath:     
         images_list = glob(imageroot+'/*.jpg')
         img_id_map = {images_list[i].split('/')[-1]:i+1 for i in range(len(images_list))}
         data_dict = {}
@@ -85,12 +71,12 @@ def main():
         
     # filepath parameter
     filepath = args.filepath[:-1] if args.filepath.endswith('/') else args.filepath
-
+    
     # test data to json
     images_list = geojson2coco(imageroot= filepath,
                               geojsonpath = None,
                               destfile=os.path.dirname(os.path.realpath(__file__))+'/testcoco.json')
-
+    
     # load model.py
     cfg = Config.fromfile(os.path.dirname(os.path.realpath(__file__))+'/model.py')
   
@@ -208,6 +194,6 @@ def main():
     os.remove(os.path.dirname(os.path.realpath(__file__))+'/result.bbox.json')
     os.remove(os.path.dirname(os.path.realpath(__file__))+'/testcoco.json')
     
-
+    
 if __name__ == '__main__':
     main()
