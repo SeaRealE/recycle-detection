@@ -8,6 +8,8 @@ Ubuntu 18.04.5 LTS
 Python 3.7  
 CUDA 10.2  
 ```
+`mmdet` is forked from [open-mmlab/mmdetection](https://github.com/open-mmlab/mmdetection). Difference in `mmdet/datasets/coco.py`, variable `CLASSES`
+
 
 ## Install
 ```
