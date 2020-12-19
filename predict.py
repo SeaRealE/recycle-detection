@@ -34,10 +34,10 @@ def parse_args():
 
 
 def geojson2coco(imageroot: str, geojsonpath: str, destfile, difficult='-1'):
-    
     CLASS_NAMES_EN = ('background', 'c_1', 'c_2', 'c_3', 'c_4', 'c_5', 'c_6', 'c_7')
-
-    if not geojsonpath:     
+    # set difficult to filter '2', '1', or do not filter, set '-1'
+    if not geojsonpath:
+        # images_list = natsort.natsorted(glob(imageroot+'/*.jpg'))        
         images_list = glob(imageroot+'/*.jpg')
         img_id_map = {images_list[i].split('/')[-1]:i+1 for i in range(len(images_list))}
         data_dict = {}
@@ -71,19 +71,19 @@ def main():
         
     # filepath parameter
     filepath = args.filepath[:-1] if args.filepath.endswith('/') else args.filepath
-    
+
     # test data to json
     images_list = geojson2coco(imageroot= filepath,
                               geojsonpath = None,
                               destfile=os.path.dirname(os.path.realpath(__file__))+'/testcoco.json')
-    
+
     # load model.py
     cfg = Config.fromfile(os.path.dirname(os.path.realpath(__file__))+'/model.py')
   
     # change the test filepath
     cfg.data_root = filepath
     cfg.data.test['img_prefix'] = filepath
-    cfg.data.test['ann_file'] = os.path.dirname(os.path.realpath(__file__))+'/testcoco.json'     
+    cfg.data.test['ann_file'] = os.path.dirname(os.path.realpath(__file__))+'/testcoco.json'
       
     # import modules from string list.
     if cfg.get('custom_imports', None):
@@ -172,7 +172,7 @@ def main():
     check = [False for i in range(size)]
     dic = OrderedDict({key:{'id': key+1, 'file_name': images_list[key].split('/')[-1], 'object':[{'box':[], 'label': ""}]} for key in range(size)})
     
-    f = open(os.path.dirname(os.path.realpath(__file__))+'/t3_res_0030.json', 'w')
+    f = open(os.path.dirname(os.path.realpath(__file__))+'/t3_res_U0000000283.json', 'w')
     for item in json_data:
         cur_id = item["image_id"] - 1
 
