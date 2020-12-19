@@ -18,6 +18,7 @@ $ pip install mmcv-full==1.1.6+torch1.5.0+cu102 -f https://openmmlab.oss-acceler
 ```
 
 ## Run
+⚠️ **you need a file** `weights.pth`
 ```
 $ python predict.py {FILE_PATH}      
 ```
