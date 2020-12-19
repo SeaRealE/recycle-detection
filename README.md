@@ -1,5 +1,6 @@
 # recycle_detection : inference code
-**AI Grand Challenge (Nov 16, 2020 ~ Nov 20,2020)**
+**AI Grand Challenge (Nov 16, 2020 ~ Nov 20,2020)**  
+Train code - [jaebbb/Recycle-Trash-Detection](https://github.com/jaebbb/Recycle-Trash-Detection)
 
 ## Environments
 ```
