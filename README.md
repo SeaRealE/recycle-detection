@@ -1,5 +1,7 @@
 # recycle_detection : inference code
 **AI Grand Challenge (Nov 16, 2020 ~ Nov 20,2020)**  
+🥈 2nd Place Winner of Object Classification Track
+<img src =https://user-images.githubusercontent.com/52495256/102849932-8e987180-445b-11eb-8728-96b52d696c5f.png width="700" height="300" />  
 Train code - [jaebbb/Recycle-Trash-Detection](https://github.com/jaebbb/Recycle-Trash-Detection)
 
 ## Environments
